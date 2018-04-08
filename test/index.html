@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>File Table Test</title>
+</head>
+<body>
+<h1>This is a Heading</h1>
+<p>This is a paragraph.</p>
+<input type="file" id="fileTableSelector" multiple/>
+<script src="/dist/filetable.deps.js"></script>
+<script src="/dist/filetable.min.js"></script>
+<script>
+  $(document).ready(function () {
+    let myFileTable = new FileTable();
+    myFileTable.bind('#fileTableSelector');
+    myFileTable.on('new_file', console.log);
+    window.myFileTable = myFileTable;
+  });
+</script>
+</body>
+</html>
