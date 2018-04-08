@@ -1,5 +1,5 @@
 {
-  "name": "filetable",
+  "name": "@xemasiv/filetable",
   "version": "1.0.0",
   "description": "High-level file-table for the browser.",
   "main": "index.js",
