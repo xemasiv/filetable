@@ -19,8 +19,6 @@ class FileTable{
     this.emit = (...args) => {
       EventEmitter.emit.apply(EventEmitter, args);
     }
-    console.log(async);
-    console.log(async.queue);
     let queue = async.queue((task, callback) => {
       task(callback);
     });
@@ -35,9 +33,7 @@ class FileTable{
   queueFile (e) {
     const instance = this;
     const queue = this._queue;
-    console.log(queue);
     const files = e.target.files;
-    console.log(files);
     Object.keys(files).map((item) => {
       queue.push(instance.processFile(files[item]), () => {
         instance.emit('new_file');
@@ -45,6 +41,7 @@ class FileTable{
     });
   }
   processFile (file) {
+    const instance = this;
     return (callback) => {
 
       const fileExtension = (filename, opts) => {
@@ -62,10 +59,12 @@ class FileTable{
 			let chunks = Math.ceil(file.size / chunkSize);
 			let currentChunk = 0;
       let hashInstance = sha3_256.create();
-
+      instance.emit('bufferStart');
       let readFile = (file) => {
         let fileReader = new FileReader();
-        fileReader.onload = function (e) {
+        fileReader.onload = (e) => {
+          console.log(e.target.result);
+          instance.emit('bufferAppend', e.target.result);
           hashInstance.update(e.target.result);
           currentChunk++;
           if (currentChunk < chunks) {
@@ -73,6 +72,7 @@ class FileTable{
           } else {
             let hashedFileName = btoa(hashInstance.hex()).concat('.', fileExtension(file.name));
             console.log(hashedFileName);
+            instance.emit('bufferEnd');
             callback();
           }
         }
