@@ -58,7 +58,7 @@ class FileTable {
         File.prototype.slice ||
         File.prototype.mozSlice ||
         File.prototype.webkitSlice;
-			let chunkSize = 256000;
+			let chunkSize = 128000;
 			let chunks = Math.ceil(file.size / chunkSize);
 			let currentChunk = 0;
       let hashInstance = sha3_256.create();
