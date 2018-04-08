@@ -8,12 +8,15 @@
 <p>This is a paragraph.</p>
 <input type="file" id="fileTableSelector" multiple/>
 
-<video id="leftVideo" controls muted></video>
+<!--
+<video id="leftVideo" autoplay controls loop style="max-width: 640px; max-height: 480px;"></video>
+-->
+<div id="video-container"></div>
 
-<video id="rightVideo" autoplay controls></video>
+<button id="loadVideo">Load Video</button>
 
 <script src="/dist/filetable.deps.js"></script>
-<script src="/dist/filetable.min.js"></script>
+<script src="/dist/filetable.js"></script>
 <script>
   $(document).ready(function () {
     var myFileTable = new FileTable();
@@ -21,26 +24,46 @@
     myFileTable.on('new_file', console.log);
     window.myFileTable = myFileTable;
 
-    var leftVideo = document.getElementById('leftVideo');
-    var rightVideo = document.getElementById('rightVideo');
-    var mediaSource = new MediaSource();
-    leftVideo.src = window.URL.createObjectURL(mediaSource);
-
-    var sourceBuffer;
-    myFileTable.on('bufferStart', function () {
-      sourceBuffer = mediaSource.addSourceBuffer('video/webm; codecs="vorbis,vp8"');
+    $('#loadVideo').prop('disabled', true);
+    myFileTable.on('new_file', function () {
+      $('#loadVideo').prop('disabled', false);
     });
-    myFileTable.on('bufferAppend', function (buffer) {
-      sourceBuffer.appendBuffer(new Uint8Array(buffer));
-    });
-    myFileTable.on('bufferEnd', function () {
-      sourceBuffer.addEventListener('updateend', function() {
-        if (!sourceBuffer.updating && mediaSource.readyState === 'open') {
-          mediaSource.endOfStream();
-        }
+    $('#loadVideo').click(() => {
+      $('#video-container').children().filter("video").each(function(){
+          this.pause();
+          delete this;
+          $(this).remove();
       });
+      $('#video-container').empty();
+      setTimeout(function () {
+        let videoElement = $('<video>')
+          .attr('id', 'video-element')
+          .css('max-width', 480)
+          .css('max-height', 320)
+          .prop('autoplay', true)
+          .prop('controls', true)
+          .prop('loop', true)
+          .appendTo($('#video-container'));
+        let files = myFileTable.getFiles();
+        let targetFile = files[0];
+        let targetChunks = targetFile.chunkCount;
+        let chunkLoader = new VideoChunkLoader(videoElement, targetFile.type, targetChunks);
+        for (let i=0; i <= targetChunks; i++) {
+          chunkLoader.pushArrayBuffer(
+            myFileTable.getFileChunk(targetFile.hash, i)
+          );
+        }
+        chunkLoader.on('try_mimetype', function (mimeType) {
+          console.log('Trying:', mimeType);
+        });
+        chunkLoader.on('done', function () {
+          console.log('Video loaded!');
+        });
+        videoElement.on('error', (e) => {
+          console.log(e.target.error);
+        });
+      }, 500);
     });
-
   });
 </script>
 </body>

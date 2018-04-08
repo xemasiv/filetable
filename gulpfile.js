@@ -48,7 +48,7 @@ gulp.task('deps', function(){
 });
 
 // build
-gulp.task('build', function(){
+gulp.task('min', function(){
   return gulp.src([
       'empty'
     ])
@@ -56,7 +56,14 @@ gulp.task('build', function(){
     .pipe(concat('filetable.min.js'))
     .pipe(gulp.dest('dist/'));
 });
+gulp.task('bare', function(){
+  return gulp.src([
+      'index.js'
+    ])
+    .pipe(concat('filetable.js'))
+    .pipe(gulp.dest('dist/'));
+});
 
 gulp.task('default', [
-  'deps', 'build'
+  'deps', 'min', 'bare'
 ]);
